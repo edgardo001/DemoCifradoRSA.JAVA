@@ -21,14 +21,19 @@ public class DemoCifradoRSA {
         try {
             System.out.println("============TEST CON P12================");
             testConP12();
+            testSignRSAConP12();
             System.out.println("============================");
             System.out.println("============================");
             System.out.println("============TEST CON ALMACEN WINDOWS================");
-            testConAlmacenWindows();
+            //testConAlmacenWindows();
         } catch (Exception e) {
+            System.out.println(e.getMessage());
         }
     }
-
+    
+    /**
+     * Cifra/Descifra texto con llaves RSA de un contenedor .p12/.pfx
+     */
     private static void testConP12() {
         try {
             //certificado en formato p12 o pfx (debe contener llave privada, publica y certificado)
@@ -51,6 +56,33 @@ public class DemoCifradoRSA {
             System.out.println(e.getMessage());
         }
     }
+
+    /**
+     * Obtiene y verifica una firma de un texto
+     */
+    private static void testSignRSAConP12() {
+        try {
+            //certificado en formato p12 o pfx (debe contener llave privada, publica y certificado)
+            File fContenedorp12 = new File("myCertCreado.p12");
+            //clave del p12 o pfx
+            String Contenedorp12clave = "Passw0rd";
+            String originalText = "demostracion de cifrado con llave publica.!!";
+            EncryptionRSA encryptionUtil = new EncryptionRSA();
+            CertificateEntity certificateEntity = encryptionUtil.getCertificateP12(fContenedorp12, Contenedorp12clave);
+            //Encripta String con llave publica
+            byte[] cipherText = encryptionUtil.signWithPrivKey(originalText, certificateEntity);
+            System.out.println("Sign: " + Base64.getEncoder().encodeToString(cipherText));            
+            boolean  verify = encryptionUtil.verifySignWithPubKey(originalText,certificateEntity, cipherText);
+            System.out.println("Verificacion: " + verify);
+            
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+    }
+    
+    /**
+    * Cifra/Descifra texto con llaves RSA del almacen de windows
+    */
     private static void testConAlmacenWindows() {
         try {
             String originalText = "demostracion de cifrado con llave publica.!!";

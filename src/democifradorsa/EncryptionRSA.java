@@ -8,6 +8,7 @@ package democifradorsa;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import java.security.InvalidKeyException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -15,6 +16,8 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.Provider;
 import java.security.Security;
+import java.security.Signature;
+import java.security.SignatureException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -181,5 +184,45 @@ public class EncryptionRSA {
             ex.printStackTrace();
         }
         return new String(dectyptedText);
+    }
+    /**
+     * Get the RSA signature of a text using the private key
+     * 
+     * @param text
+     * @param myCertificate
+     * @return 
+     */
+    public static byte[] signWithPrivKey(String text, CertificateEntity myCertificate) {
+        byte[] sign = null;
+        try {
+            Signature privateSignature = Signature.getInstance("SHA256withRSA");
+            privateSignature.initSign(myCertificate.getPrivateKey());
+            privateSignature.update(text.getBytes());
+            sign = privateSignature.sign();
+            return sign;
+        } catch (InvalidKeyException | NoSuchAlgorithmException | SignatureException ex) {
+            ex.printStackTrace();
+        }
+        return sign;
+    }
+    /**
+     * Verify an RSA signature using a public key
+     * 
+     * @param text
+     * @param myCertificate
+     * @param signature
+     * @return 
+     */
+    public static boolean verifySignWithPubKey(String text, CertificateEntity myCertificate, byte[] signature) {
+        boolean verify = false;
+        try {
+            Signature publicSignature = Signature.getInstance("SHA256withRSA");
+            publicSignature.initVerify(myCertificate.getX509Certificate().getPublicKey());
+            publicSignature.update(text.getBytes(UTF_8));
+            return publicSignature.verify(signature);
+        } catch (InvalidKeyException | NoSuchAlgorithmException | SignatureException ex) {
+            ex.printStackTrace();
+        }
+        return verify;
     }
 }
